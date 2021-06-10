@@ -73,11 +73,11 @@ public class Executor {
                 .authenticationProvider(tokenCredAuthProvider)
                 //.httpClient(httpClient) //Пока не понятна разница с элементов выше
                 .buildClient();
-        graphClient.getLogger().setLoggingLevel(LoggerLevel.DEBUG);
+        //graphClient.getLogger().setLoggingLevel(LoggerLevel.DEBUG);
         //System.out.println("After graphClient");
         /*final User me = graphClient.me().buildRequest().get();
         System.out.println("ME " + me);*/
-        UserCollectionPage users = graphClient.users()
+        /*UserCollectionPage users = graphClient.users()
                 .buildRequest()
                 .get();
 
@@ -102,16 +102,51 @@ public class Executor {
         //System.out.println("Drives " + graphClient.drives().count().buildRequest().get());
         //System.out.println("Directory" + graphClient.directory().buildRequest().get());// Не работает
         System.out.println("SDK " + graphClient.getServiceSDKVersion());
-        System.out.println("ServiceRoot " + graphClient.getServiceRoot());
+        System.out.println("ServiceRoot " + graphClient.getServiceRoot());*/
         /*DriveItem driveItem = graphClient.me().drive().root()
                 .buildRequest()
                 .get();
         System.out.println(driveItem);*/
-      DriveCollectionPage drive = graphClient.users("2873d171c-8145-4586-b351-5dbea7fcf3a0").drives()
+        User user = graphClient.users("873d171c-8145-4586-b351-5dbea7fcf3a0")
                 .buildRequest()
                 .get();
-        System.out.println(drive);
-
-        //System.out.println(objectMapper.writeValueAsString(graphClient.drive().items().buildRequest().get()));
+        System.out.println(objectMapper.writeValueAsString(user));
+        //Получаем сведения о диске конкретного клиента
+      DriveCollectionPage oDriveCollectionPage = graphClient.users("873d171c-8145-4586-b351-5dbea7fcf3a0").drives()
+                .buildRequest()
+                .get();
+        System.out.println("/////////////////////////////////////////graphClient");
+        System.out.println("graphClient.drive() " + graphClient.drive());
+        System.out.println("graphClient.drives() " + graphClient.drives());
+        System.out.println("graphClient.directoryObjects() " + graphClient.directoryObjects());
+        System.out.println("graphClient.teams() " + graphClient.teams());
+        System.out.println("/////////////////////////////////////////graphClient.drive");
+        System.out.println("Drive " + graphClient.drive().buildRequest().get().name);
+        System.out.println("WEB_URL: " + graphClient.drive().buildRequest().get().webUrl);
+        System.out.println("Root: " + graphClient.drive().buildRequest().get().root);
+        System.out.println("graphClient.drive().buildRequest().get().driveType: " + graphClient.drive().buildRequest().get().driveType);
+        System.out.println("graphClient.drive().buildRequest().get().items: " + graphClient.drive().buildRequest().get().items);
+        System.out.println("graphClient.drive().buildRequest().get().special: " + graphClient.drive().buildRequest().get().special);
+        //System.out.println("graphClient.drive().buildRequest().get().special: " + graphClient.drive().buildRequest().get().);
+        System.out.println("////////////////////////-----------------------------graphClient.users(873d171c-8145-4586-b351-5dbea7fcf3a0)");
+        System.out.println("Size: " + oDriveCollectionPage.getCurrentPage().size());
+        System.out.println("ID: " + oDriveCollectionPage.getCurrentPage().get(0).id);
+        System.out.println("Name: " + oDriveCollectionPage.getCurrentPage().get(0).name);
+        System.out.println("Root: " + oDriveCollectionPage.getCurrentPage().get(0).root);
+        System.out.println("webUrl: " + oDriveCollectionPage.getCurrentPage().get(0).webUrl);
+        System.out.println("items: " + oDriveCollectionPage.getCurrentPage().get(0).items);
+        System.out.println("description: " + oDriveCollectionPage.getCurrentPage().get(0).description);
+        System.out.println("driveType: " + oDriveCollectionPage.getCurrentPage().get(0).driveType);
+        System.out.println("eTag: " + oDriveCollectionPage.getCurrentPage().get(0).eTag);
+        System.out.println("oDataType: " + oDriveCollectionPage.getCurrentPage().get(0).oDataType);
+        System.out.println("createdBy: " + oDriveCollectionPage.getCurrentPage().get(0).createdBy);
+        System.out.println("createdByUser: " + oDriveCollectionPage.getCurrentPage().get(0).createdByUser);
+        System.out.println("createdDateTime: " + oDriveCollectionPage.getCurrentPage().get(0).createdDateTime);
+        System.out.println("following: " + oDriveCollectionPage.getCurrentPage().get(0).following);
+        System.out.println("list: " + oDriveCollectionPage.getCurrentPage().get(0).list);
+        System.out.println("quota: " + oDriveCollectionPage.getCurrentPage().get(0).quota);
+        System.out.println("sharePointIds: " + oDriveCollectionPage.getCurrentPage().get(0).sharePointIds);
+        System.out.println("special: " + oDriveCollectionPage.getCurrentPage().get(0).special);
+        System.out.println("system: " + oDriveCollectionPage.getCurrentPage().get(0).system);
     }
 }
