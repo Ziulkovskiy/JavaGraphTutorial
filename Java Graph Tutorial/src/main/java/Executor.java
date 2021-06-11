@@ -115,11 +115,14 @@ public class Executor {
                 .get();*/
         //System.out.println(objectMapper.writeValueAsString(user));
         //Получаем сведения о диске конкретного клиента
+        System.out.println("First look: " + objectMapper.writeValueAsString(graphClient.users("873d171c-8145-4586-b351-5dbea7fcf3a0").drive().root().children().buildRequest().get())); //root() тут после рута
     DriveItemCollectionPage oDriveCollectionPage = graphClient.users("873d171c-8145-4586-b351-5dbea7fcf3a0").drive().root().children().buildRequest().get(); //тут
         System.out.println("Drive " + objectMapper.writeValueAsString(oDriveCollectionPage));
         System.out.println("CurrentPage size" + objectMapper.writeValueAsString(oDriveCollectionPage.getCurrentPage().size()));
-        System.out.println("CurrentPage size" + objectMapper.writeValueAsString(oDriveCollectionPage.getCurrentPage().get(0)));
-        System.out.println("Folder" + objectMapper.writeValueAsString(oDriveCollectionPage.getCurrentPage().get(0).folder));
+        System.out.println("CurrentPage zero" + objectMapper.writeValueAsString(oDriveCollectionPage.getCurrentPage().get(0)));
+        System.out.println("Folder: " + objectMapper.writeValueAsString(oDriveCollectionPage.getCurrentPage().get(0).folder));
+        System.out.println("ListItem: " + objectMapper.writeValueAsString(oDriveCollectionPage.getCurrentPage().get(0)));
+        System.out.println("Children: " + objectMapper.writeValueAsString(oDriveCollectionPage.getCurrentPage().get(0).children));
 
                 /*
         System.out.println("/////////////////////////////////////////graphClient");
