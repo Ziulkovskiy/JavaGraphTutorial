@@ -5,6 +5,9 @@ import com.azure.identity.ClientSecretCredentialBuilder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.google.common.base.Charsets;
+import com.google.common.io.ByteStreams;
+import com.google.gson.JsonObject;
 import com.microsoft.graph.authentication.IAuthenticationProvider;
 import com.microsoft.graph.authentication.TokenCredentialAuthProvider;
 import com.microsoft.graph.http.BaseRequest;
@@ -13,25 +16,25 @@ import com.microsoft.graph.logger.LoggerLevel;
 import com.microsoft.graph.models.Drive;
 import com.microsoft.graph.models.DriveItem;
 import com.microsoft.graph.models.User;
+import com.microsoft.graph.options.Option;
+import com.microsoft.graph.options.QueryOption;
 import com.microsoft.graph.requests.DriveCollectionPage;
 import com.microsoft.graph.requests.DriveItemCollectionPage;
 import com.microsoft.graph.requests.GraphServiceClient;
 import com.microsoft.graph.requests.UserCollectionPage;
+//import org.apache.commons.io.IOUtils;
+import net.minidev.json.JSONObject;
 import okhttp3.OkHttpClient;
 import sun.net.www.http.HttpClient;
 
 import javax.naming.ServiceUnavailableException;
 import javax.net.ssl.HttpsURLConnection;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -115,15 +118,64 @@ public class Executor {
                 .get();*/
         //System.out.println(objectMapper.writeValueAsString(user));
         //Получаем сведения о диске конкретного клиента
-        System.out.println("First look: " + objectMapper.writeValueAsString(graphClient.users("873d171c-8145-4586-b351-5dbea7fcf3a0").drive().root().children().buildRequest().get())); //root() тут после рута
+        //System.out.println("First look: " + objectMapper.writeValueAsString(graphClient.users("873d171c-8145-4586-b351-5dbea7fcf3a0").drive().root().children().buildRequest().get())); //root() тут после рута
     DriveItemCollectionPage oDriveCollectionPage = graphClient.users("873d171c-8145-4586-b351-5dbea7fcf3a0").drive().root().children().buildRequest().get(); //тут
         System.out.println("Drive " + objectMapper.writeValueAsString(oDriveCollectionPage));
         System.out.println("CurrentPage size" + objectMapper.writeValueAsString(oDriveCollectionPage.getCurrentPage().size()));
-        System.out.println("CurrentPage zero" + objectMapper.writeValueAsString(oDriveCollectionPage.getCurrentPage().get(0)));
-        System.out.println("Folder: " + objectMapper.writeValueAsString(oDriveCollectionPage.getCurrentPage().get(0).folder));
-        System.out.println("ListItem: " + objectMapper.writeValueAsString(oDriveCollectionPage.getCurrentPage().get(0)));
-        System.out.println("Children: " + objectMapper.writeValueAsString(oDriveCollectionPage.getCurrentPage().get(0).children));
+        System.out.println("CurrentPage zero" + objectMapper.writeValueAsString(oDriveCollectionPage.getCurrentPage().get(4)));
+        System.out.println("--------------------------Try get content from nested folder---------------------");
+        //System.out.println("SubFolder Документы:  " + objectMapper.writeValueAsString(graphClient.users("873d171c-8145-4586-b351-5dbea7fcf3a0").drive().items("01WFCTHVM3S4K2OOMNEZDLZB2AOMYHREDR").listItem().buildRequest().get())); так можем получить необходимый мета объект для определения что это
+        System.out.println("SubFolder Документы:  " + objectMapper.writeValueAsString(graphClient.users("873d171c-8145-4586-b351-5dbea7fcf3a0").drive().items("01WFCTHVM3S4K2OOMNEZDLZB2AOMYHREDR").children().buildRequest().get())); //Рабочий вариант получения мета информации о контенте внутри опредёлённо дирректории
+        System.out.println("SubSubFolder Документы:  " + objectMapper.writeValueAsString(graphClient.users("873d171c-8145-4586-b351-5dbea7fcf3a0").drive().items("01WFCTHVJUSN2MGYVEMRDLYROPNEYIVT6W").children().buildRequest().get()));
+        //System.out.println("Folder: " + objectMapper.writeValueAsString(oDriveCollectionPage.getCurrentPage().get(0).folder));
+        //System.out.println("ListItem: " + objectMapper.writeValueAsString(oDriveCollectionPage.getCurrentPage().get(0)));
+        //System.out.println("Children: " + objectMapper.writeValueAsString(oDriveCollectionPage.getCurrentPage().get(0).children));
+        System.out.println("Try to get metaatribute file :  " + objectMapper.writeValueAsString(graphClient.users("873d171c-8145-4586-b351-5dbea7fcf3a0").drive().items("01WFCTHVKMWFSW6VWGXBGZQJI2VAA7G7TT").buildRequest().get()));
+        System.out.println("Try to get content file :  " + graphClient.users("873d171c-8145-4586-b351-5dbea7fcf3a0").drive().items("01WFCTHVKMWFSW6VWGXBGZQJI2VAA7G7TT").content().buildRequest().get());
+        BufferedInputStream in = new BufferedInputStream(graphClient.users("873d171c-8145-4586-b351-5dbea7fcf3a0").drive().items("01WFCTHVKMWFSW6VWGXBGZQJI2VAA7G7TT").content().buildRequest().get());
 
+        System.out.println("Try to get content from: " + graphClient.users("873d171c-8145-4586-b351-5dbea7fcf3a0").drive().items("01WFCTHVKMWFSW6VWGXBGZQJI2VAA7G7TT").content().getRequestUrl());
+        //System.out.println("Try to read content from Docx by Charsets.UTF_16LE: " + new String(ByteStreams.toByteArray(in), Charsets.UTF_16LE));
+        //System.out.println("Try to read content from Docx by Charsets.UTF_16: " + new String(ByteStreams.toByteArray(in), Charsets.UTF_16));
+        System.out.println("Try to read content from Docx by JSON: " + objectMapper.writeValueAsString(ByteStreams.toByteArray(in)));
+        //System.out.println("Try to read content from Docx by Charsets.UTF_16BE: " + new String(ByteStreams.toByteArray(in), Charsets.UTF_16BE));
+        //System.out.println("Try to read content from Docx by Charsets.US_ASCII: " + new String(ByteStreams.toByteArray(in), Charsets.US_ASCII));
+        //System.out.println("Try to read content from Docx by Charsets.ISO_8859_1: " + new String(ByteStreams.toByteArray(in), Charsets.ISO_8859_1));
+
+
+        final String testDownloadFileId = "01WFCTHVKMWFSW6VWGXBGZQJI2VAA7G7TT";
+        //final InputStream inputStream = (InputStream) graphClient.customRequest("/users/873d171c-8145-4586-b351-5dbea7fcf3a0/drive/items/"+testDownloadFileId+"/content", InputStream.class).buildRequest().get();
+        //String sPathToDownLOad = (String) graphClient.customRequest("/users/873d171c-8145-4586-b351-5dbea7fcf3a0/drive/items/"+testDownloadFileId+"/content", String.class).buildRequest().get();
+        try (FileInputStream fileInputStream = new FileInputStream("c://files//testFile2.docx")) {
+            fileInputStream.read(ByteStreams.toByteArray(in));
+        }
+        LinkedList<Option> requestOptions = new LinkedList<Option>();
+        requestOptions.add(new QueryOption("select", "@microsoft.graph.downloadUrl"));
+
+        JsonObject oJsonObject  = (JsonObject) graphClient.customRequest("/users/873d171c-8145-4586-b351-5dbea7fcf3a0/drive/items/"+testDownloadFileId+"?select=@microsoft.graph.downloadUrl").buildRequest().get();
+        System.out.println("oJsonObject: " + oJsonObject);
+        /*InputStream inputStream = graphClient.users("873d171c-8145-4586-b351-5dbea7fcf3a0").drive().items("01WFCTHVKMWFSW6VWGXBGZQJI2VAA7G7TT").content()
+                .buildRequest( requestOptions )
+                .get();*/
+        //System.out.println("Try content: " + driveItem.file);
+       // System.out.println("Try to read content from docx: " + objectMapper.writeValueAsString(driveItem));
+
+        //FileOutputStream out = new FileOutputStream("c://files//testFile2.txt");
+
+        //out.write(ByteStreams.toByteArray(in));
+        //out.write("someWords".getBytes(StandardCharsets.UTF_8));
+       // out.close();
+        /*System.out.println("Content " + inputStream);
+        InputStreamReader isReader = new InputStreamReader(inputStream);
+        //Creating a BufferedReader object
+        BufferedReader reader = new BufferedReader(isReader);
+        StringBuffer sb = new StringBuffer();
+        String str;
+        while((str = reader.readLine())!= null){
+            sb.append(str);
+        }
+        //JSONObject testV = new JSONObject(new String(ByteStreams.toByteArray(inputStream)));
+        System.out.println("Try to read conten from docx: " + sb);
                 /*
         System.out.println("/////////////////////////////////////////graphClient");
         System.out.println("graphClient.drive() " + graphClient.drive());
