@@ -1,48 +1,32 @@
-import com.azure.identity.AuthorizationCodeCredential;
-import com.azure.identity.AuthorizationCodeCredentialBuilder;
 import com.azure.identity.ClientSecretCredential;
 import com.azure.identity.ClientSecretCredentialBuilder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.google.common.base.Charsets;
-import com.google.common.io.ByteStreams;
-import com.google.gson.JsonObject;
-import com.microsoft.graph.authentication.IAuthenticationProvider;
 import com.microsoft.graph.authentication.TokenCredentialAuthProvider;
-import com.microsoft.graph.http.BaseRequest;
-import com.microsoft.graph.httpcore.HttpClients;
 import com.microsoft.graph.logger.LoggerLevel;
 import com.microsoft.graph.models.*;
-import com.microsoft.graph.options.Option;
-import com.microsoft.graph.options.QueryOption;
-import com.microsoft.graph.requests.DriveCollectionPage;
 import com.microsoft.graph.requests.DriveItemCollectionPage;
 import com.microsoft.graph.requests.GraphServiceClient;
+import com.microsoft.graph.requests.PermissionCollectionPage;
 import com.microsoft.graph.requests.UserCollectionPage;
-//import org.apache.commons.io.IOUtils;
 import com.microsoft.graph.tasks.IProgressCallback;
 import com.microsoft.graph.tasks.LargeFileUploadResult;
 import com.microsoft.graph.tasks.LargeFileUploadTask;
-import net.minidev.json.JSONObject;
-import okhttp3.OkHttpClient;
-import sun.net.www.http.HttpClient;
 
-import javax.naming.ServiceUnavailableException;
-import javax.net.ssl.HttpsURLConnection;
-import java.io.*;
 import java.io.File;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.util.*;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+
+//import org.apache.commons.io.IOUtils;
 
 public class Executor {
+
     public static void main(String[] args) throws IOException {
         String resourceId = "https%3A%2F%2Fgraph.microsoft.com%2F.default";
         String clientId = "0f0f5373-14aa-4679-82d3-37609caa8470";
@@ -91,23 +75,23 @@ public class Executor {
                 .buildRequest()
                 .get();
 
-        List<String> asJson = new ArrayList<>();
-        users.getCurrentPage().stream().forEach(user -> {
-            try {
-                asJson.add(objectMapper.writeValueAsString(user));
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
-        });
-        System.out.println(asJson);
-        List<User> aUser = users.getCurrentPage();
-        System.out.println(aUser.size());
-        for(User oUser : aUser){
-            Drive oDrive = oUser.drive;
-            System.out.println(oUser.displayName);
-            System.out.println(oDrive);
-            //oDrive.
-        }
+//        List<String> asJson = new ArrayList<>();
+//        users.getCurrentPage().stream().forEach(user -> {
+//            try {
+//                asJson.add(objectMapper.writeValueAsString(user));
+//            } catch (JsonProcessingException e) {
+//                e.printStackTrace();
+//            }
+//        });
+//        System.out.println(asJson);
+//        List<User> aUser = users.getCurrentPage();
+//        System.out.println(aUser.size());
+//        for(User oUser : aUser){
+//            Drive oDrive = oUser.drive;
+//            System.out.println(oUser.displayName);
+//            System.out.println(oDrive);
+//            //oDrive.
+//        }
         //System.out.println("Drive " + graphClient.drive().buildRequest().toString());
         //System.out.println("Drives " + graphClient.drives().count().buildRequest().get());
         //System.out.println("Directory" + graphClient.directory().buildRequest().get());// Не работает
@@ -123,20 +107,20 @@ public class Executor {
         //System.out.println(objectMapper.writeValueAsString(user));
         //Получаем сведения о диске конкретного клиента
         //System.out.println("First look: " + objectMapper.writeValueAsString(graphClient.users("873d171c-8145-4586-b351-5dbea7fcf3a0").drive().root().children().buildRequest().get())); //root() тут после рута
-    DriveItemCollectionPage oDriveCollectionPage = graphClient.users("873d171c-8145-4586-b351-5dbea7fcf3a0").drive().root().children().buildRequest().get(); //тут
-        System.out.println("Drive " + objectMapper.writeValueAsString(oDriveCollectionPage));
-        System.out.println("CurrentPage size" + objectMapper.writeValueAsString(oDriveCollectionPage.getCurrentPage().size()));
-        System.out.println("CurrentPage zero" + objectMapper.writeValueAsString(oDriveCollectionPage.getCurrentPage().get(4)));
-        System.out.println("--------------------------Try get content from nested folder---------------------");
-        //System.out.println("SubFolder Документы:  " + objectMapper.writeValueAsString(graphClient.users("873d171c-8145-4586-b351-5dbea7fcf3a0").drive().items("01WFCTHVM3S4K2OOMNEZDLZB2AOMYHREDR").listItem().buildRequest().get())); так можем получить необходимый мета объект для определения что это
-        System.out.println("SubFolder Документы:  " + objectMapper.writeValueAsString(graphClient.users("873d171c-8145-4586-b351-5dbea7fcf3a0").drive().items("01WFCTHVM3S4K2OOMNEZDLZB2AOMYHREDR").children().buildRequest().get())); //Рабочий вариант получения мета информации о контенте внутри опредёлённо дирректории
-        System.out.println("SubSubFolder Документы:  " + objectMapper.writeValueAsString(graphClient.users("873d171c-8145-4586-b351-5dbea7fcf3a0").drive().items("01WFCTHVJUSN2MGYVEMRDLYROPNEYIVT6W").children().buildRequest().get()));
-        //System.out.println("Folder: " + objectMapper.writeValueAsString(oDriveCollectionPage.getCurrentPage().get(0).folder));
-        //System.out.println("ListItem: " + objectMapper.writeValueAsString(oDriveCollectionPage.getCurrentPage().get(0)));
-        //System.out.println("Children: " + objectMapper.writeValueAsString(oDriveCollectionPage.getCurrentPage().get(0).children));
-        //System.out.println("Try to get metaatribute file :  " + objectMapper.writeValueAsString(graphClient.users("873d171c-8145-4586-b351-5dbea7fcf3a0").drive().items("01WFCTHVKMWFSW6VWGXBGZQJI2VAA7G7TT").buildRequest().get()));
-        //System.out.println("Try to get content file :  " + graphClient.users("873d171c-8145-4586-b351-5dbea7fcf3a0").drive().items("01WFCTHVKMWFSW6VWGXBGZQJI2VAA7G7TT").content().buildRequest().get());
-        //BufferedInputStream in = new BufferedInputStream(graphClient.users("873d171c-8145-4586-b351-5dbea7fcf3a0").drive().items("01WFCTHVKMWFSW6VWGXBGZQJI2VAA7G7TT").content().buildRequest().get());
+//    DriveItemCollectionPage oDriveCollectionPage = graphClient.users("873d171c-8145-4586-b351-5dbea7fcf3a0").drive().root().children().buildRequest().get(); //тут
+//        System.out.println("Drive " + objectMapper.writeValueAsString(oDriveCollectionPage));
+//        System.out.println("CurrentPage size" + objectMapper.writeValueAsString(oDriveCollectionPage.getCurrentPage().size()));
+//        System.out.println("CurrentPage zero" + objectMapper.writeValueAsString(oDriveCollectionPage.getCurrentPage().get(4)));
+//        System.out.println("--------------------------Try get content from nested folder---------------------");
+//        //System.out.println("SubFolder Документы:  " + objectMapper.writeValueAsString(graphClient.users("873d171c-8145-4586-b351-5dbea7fcf3a0").drive().items("01WFCTHVM3S4K2OOMNEZDLZB2AOMYHREDR").listItem().buildRequest().get())); так можем получить необходимый мета объект для определения что это
+//        System.out.println("SubFolder Документы:  " + objectMapper.writeValueAsString(graphClient.users("873d171c-8145-4586-b351-5dbea7fcf3a0").drive().items("01WFCTHVM3S4K2OOMNEZDLZB2AOMYHREDR").children().buildRequest().get())); //Рабочий вариант получения мета информации о контенте внутри опредёлённо дирректории
+//        System.out.println("SubSubFolder Документы:  " + objectMapper.writeValueAsString(graphClient.users("873d171c-8145-4586-b351-5dbea7fcf3a0").drive().items("01WFCTHVJUSN2MGYVEMRDLYROPNEYIVT6W").children().buildRequest().get()));
+//        //System.out.println("Folder: " + objectMapper.writeValueAsString(oDriveCollectionPage.getCurrentPage().get(0).folder));
+//        //System.out.println("ListItem: " + objectMapper.writeValueAsString(oDriveCollectionPage.getCurrentPage().get(0)));
+//        //System.out.println("Children: " + objectMapper.writeValueAsString(oDriveCollectionPage.getCurrentPage().get(0).children));
+//        System.out.println("Try to get metaatribute file :  " + objectMapper.writeValueAsString(graphClient.users("873d171c-8145-4586-b351-5dbea7fcf3a0").drive().items("01WFCTHVKMWFSW6VWGXBGZQJI2VAA7G7TT").buildRequest().get().webUrl));
+//        //System.out.println("Try to get content file :  " + graphClient.users("873d171c-8145-4586-b351-5dbea7fcf3a0").drive().items("01WFCTHVKMWFSW6VWGXBGZQJI2VAA7G7TT").content().buildRequest().get());
+//        //BufferedInputStream in = new BufferedInputStream(graphClient.users("873d171c-8145-4586-b351-5dbea7fcf3a0").drive().items("01WFCTHVKMWFSW6VWGXBGZQJI2VAA7G7TT").content().buildRequest().get());
 
        //System.out.println("Try to get content from: " + graphClient.users("873d171c-8145-4586-b351-5dbea7fcf3a0").drive().items("01WFCTHVKMWFSW6VWGXBGZQJI2VAA7G7TT").content().getRequestUrl());
         //System.out.println("Try to read content from Docx by Charsets.UTF_16LE: " + new String(ByteStreams.toByteArray(in), Charsets.UTF_16LE));
@@ -269,7 +253,7 @@ public class Executor {
         oDriveItem.
         graphClient.me().drive().items("01WFCTHVLLWM4LCEAIHVF2IC4LFPFETGMP")
                 .buildRequest().put(oDriveItem);*/
-        File f = new File("c://files//testFile2.docx");
+        /*File f = new File("c://files//testFile2.docx");
         InputStream targetStream = new FileInputStream(f);
         long fileSize = (long) targetStream.available();
 
@@ -285,12 +269,74 @@ public class Executor {
                 fileSize,
                 DriveItem.class);
 
-        final LargeFileUploadResult<DriveItem> result = chunkedUploadProvider.upload(0, null, callback);
-        System.out.println("JSON for LargeFileUploadResult: " + objectMapper.writeValueAsString(result));
+        final LargeFileUploadResult<DriveItem> result = chunkedUploadProvider.upload(0, null);
+        System.out.println("JSON for LargeFileUploadResult: " + objectMapper.writeValueAsString(result));*/
+        //----------------------
+        LinkedList<String> asRoles = new LinkedList<String>();
+        asRoles.add("write");
+
+        String message = "Here's the file that we're collaborating on.";
+        String sID_File = "01WFCTHVN4YTCKPFSLKRE32K3RVILOPNPY";
+
+        List<String> asEmail_Users = Arrays.asList("nykyta_bondarenko@graphjava.onmicrosoft.com,panzer1594@gmail.com,CatDivision93@gmail.com".split("\\,"));
+        LinkedList<DriveRecipient> aRecipientsList = new LinkedList<DriveRecipient>();
+        for(String sEmail_User : asEmail_Users){
+            DriveRecipient oRecipients = new DriveRecipient();
+            oRecipients.email = sEmail_User;
+            aRecipientsList.add(oRecipients);
+        }
+
+        graphClient.users("873d171c-8145-4586-b351-5dbea7fcf3a0").drive().items(sID_File)
+                .invite(DriveItemInviteParameterSet
+                .newBuilder()
+                .withRequireSignIn(true)
+                .withRoles(asRoles)
+                .withSendInvitation(true)
+                .withMessage(message)
+                .withRecipients(aRecipientsList)
+                .build())
+                .buildRequest()
+                .post();
+
+        PermissionCollectionPage oPermissions =  graphClient.users("873d171c-8145-4586-b351-5dbea7fcf3a0").drive().items(sID_File)
+                .permissions()
+                .buildRequest()
+                .get();
+
+        String sResponse = objectMapper.writeValueAsString(oPermissions);
+
+        System.out.println("Define sResponse" + sResponse);
+        //-----
+        //GraphServiceClient graphClient = GraphServiceClient.builder().authenticationProvider( authProvider ).buildClient();
+
+//        String type = "edit";
+//
+//        String scope = "organization";
+//
+//        graphClient.users("873d171c-8145-4586-b351-5dbea7fcf3a0").drive().items("01WFCTHVN4YTCKPFSLKRE32K3RVILOPNPY")
+//                .createLink(DriveItemCreateLinkParameterSet
+//                        .newBuilder()
+//                        .withType(type)
+//                        .withScope(scope)
+//                        .withExpirationDateTime(null)
+//                        .withPassword(null)
+//                        .withMessage(null)
+//                        .build())
+//                .buildRequest()
+//                .post();
+//
+//        PermissionCollectionPage oPermissions =  graphClient.users("873d171c-8145-4586-b351-5dbea7fcf3a0").drive().items("01WFCTHVN4YTCKPFSLKRE32K3RVILOPNPY")
+//                .permissions()
+//                .buildRequest()
+//                .get();
+//
+//        String sResponse = objectMapper.writeValueAsString(oPermissions);
+//        System.out.println("Define sResponse" + sResponse);
 
 
     }
 
+    //Возможно вообще не пригодится
     static final IProgressCallback callback = new IProgressCallback () {
         @Override
         public void progress(final long current, final long max) {
